@@ -1,5 +1,5 @@
 (require 'color-theme)
-(require 'color-theme-molokai)
+;;(require 'color-theme-molokai)
 
 ;; {{ work around color theme bug
 ;; @see https://plus.google.com/106672400078851000780/posts/KhTgscKE8PM
@@ -9,7 +9,9 @@
     (disable-theme i)))
 ;; }}
 
-(color-theme-molokai)
+;;(color-theme-molokai)
+(color-theme-initialize)
+(color-theme-aalto-light)
 ;; This line must be after color-theme-molokai! Don't know why.
 (setq color-theme-illegal-faces "^\\(w3-\\|dropdown-\\|info-\\|linum\\|yas-\\|font-lock\\)")
 ;; (color-theme-select 'color-theme-xp)

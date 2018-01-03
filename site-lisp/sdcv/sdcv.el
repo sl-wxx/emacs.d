@@ -380,7 +380,7 @@ Argument DICTIONARY-LIST the word that need transform."
     (sdcv-filter
      (mapconcat
       (lambda (dict)
-        (setq cmd (format "sdcv -n -u \"%s\" \"%s\"" dict word))
+        (setq cmd (format "sdcv -n \"%s\"" word))
         (shell-command-to-string cmd))
       dictionary-list "\n")
      )))

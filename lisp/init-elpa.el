@@ -73,15 +73,15 @@
 
 (setq package-archives
       '(;; uncomment below line if you need use GNU ELPA
-        ;; ("gnu" . "https://elpa.gnu.org/packages/")
         ("localelpa" . "~/.emacs.d/localelpa/")
         ;; ("my-js2-mode" . "https://raw.githubusercontent.com/redguardtoo/js2-mode/release/") ; github has some issue
         ;; {{ backup repositories
-        ;; ("melpa" . "http://mirrors.163.com/elpa/melpa/")
-        ;; ("melpa-stable" . "http://mirrors.163.com/elpa/melpa-stable/")
+       	("melpa" . "http://mirrors.163.com/elpa/melpa/")
+	("melpa-stable" . "http://mirrors.163.com/elpa/melpa-stable/")
+	("gnu" . "https://elpa.gnu.org/packages/")
         ;; }}
-        ("melpa" . "https://melpa.org/packages/")
-        ("melpa-stable" . "https://stable.melpa.org/packages/")
+        ;; ("melpa" . "https://melpa.org/packages/")
+        ;; ("melpa-stable" . "https://stable.melpa.org/packages/")
         ))
 
 ;; Un-comment below line if you follow "Install stable version in easiest way"

@@ -68,7 +68,8 @@
     erlang
     workgroups2
     zoutline
-    company-c-headers)
+    company-c-headers
+    jdee)
   "Don't install any Melpa packages except these packages")
 
 (setq package-archives

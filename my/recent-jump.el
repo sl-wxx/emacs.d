@@ -75,6 +75,7 @@
     ido-switch-buffer
     imenu
     counsel-gtags-find-definition
+    swiper
     ))
     
 ;;this variable is set at pre-command-hook, and remember where are you before a

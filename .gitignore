@@ -57,3 +57,5 @@ projectile.cache
 .unpacked
 srecode-map.el
 .smex-items
+network-security.data
+.last-package-update-day

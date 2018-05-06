@@ -79,7 +79,8 @@
         ;; {{ backup repositories
        	("melpa" . "http://mirrors.163.com/elpa/melpa/")
 	("melpa-stable" . "http://mirrors.163.com/elpa/melpa-stable/")
-	("gnu" . "https://elpa.gnu.org/packages/")
+	("gnu" . "http://elpa.emacs-china.org/gnu/")
+	;;("gnu" . "https://elpa.gnu.org/packages/")
         ;; }}
         ;; ("melpa" . "https://melpa.org/packages/")
         ;; ("melpa-stable" . "https://stable.melpa.org/packages/")

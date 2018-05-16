@@ -7,6 +7,6 @@
 ;; set recent-jump
 (require 'recent-jump)
 
-(if (file-exists-p "~/.emacs.d/my/keybind.el") (load-file "~/.emacs.d/my/keybind.el"))
+(if (file-exists-p "~/.emacs.d/my/key-binding.el") (load-file "~/.emacs.d/my/key-binding.el"))
 
 

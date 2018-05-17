@@ -1,58 +1,58 @@
-(define-prefix-command 'my-leading-key)
-
-;; 由于,用作leading key, 这里提供输入,的命令
-(define-key my-leading-key (kbd "SPC") 'insert-comma-space)
 (defun insert-comma-space ()
   (interactive)
   (insert ", "))
-(define-key my-leading-key (kbd ",") 'insert-comma)
+
 (defun insert-comma ()
   (interactive)
   (insert ","))
 
-;; sdcv
-(define-key my-leading-key (kbd "<tab>") 'sdcv-search-pointer)
-
-;; jump: recent-jump & gtags
-(define-prefix-command 'my-leading-key-jump)
-(define-key my-leading-key (kbd "j") 'my-leading-key-jump)
-(define-key my-leading-key-jump (kbd "d") 'cousel-gtags-find-definition)
-(define-key my-leading-key-jump (kbd "r") 'cousel-gtags-find-reference)
-(define-key my-leading-key-jump (kbd "f") 'recent-jump-jump-forward)
-(define-key my-leading-key-jump (kbd "b") 'recent-jump-jump-backward)
-
-
+(defhydra my-hydra (:color pink
+                             :hint nil)
+  "
+^Insert^                   ^Find^                    ^Jump^                  ^Dictionary
+^^^^^^^^------------------------------------------------------------------------------------
+_,_: insert-comma          _d_: find-definition      _f_: jump-forward       _<tab>_: sdcv-search-pointer
+_ _: insert-comma-space    _r_: find-reference       _b_: jump-backward      ^ ^
+"
+  ("," insert-comma)
+  (" " insert-comma-space)
+  ("d" counsel-gtags-find-definition :color blue)
+  ("r" counsel-gtags-find-reference :color blue)
+  ("f" recent-jump-jump-forward)
+  ("b" recent-jump-jump-backward)
+  ("<tab>" sdcv-search-pointer :color blue)
+)
 
 
 ;; --------create a minor-mode to make our key-binding take precedence --------------------
 
-(defvar my-leading-key-minor-mode-map
+(defvar my-hydra-minor-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd ",") 'my-leading-key)
+    (define-key map (kbd ",") 'my-hydra/body)
     map)
-  "my-leading-key-minor-mode keymap.")
+  "my-hydra-minor-mode keymap.")
 
-(define-minor-mode my-leading-key-minor-mode
+(define-minor-mode my-hydra-minor-mode
   "A minor mode so that my key settings override annoying major modes."
   :init-value t
-  :lighter " my-leading-key"
-  :keymap my-leading-key-minor-mode-map)
+  :lighter " my-hydra"
+  :keymap my-hydra-minor-mode-map)
 
-(defun my-leading-key-minibuffer-setup-hook ()
-  (my-leading-key-minor-mode 0))
+(defun my-hydra-minibuffer-setup-hook ()
+  (my-hydra-minor-mode 0))
 
-(add-hook 'minibuffer-setup-hook 'my-leading-key-minibuffer-setup-hook)
+(add-hook 'minibuffer-setup-hook 'my-hydra-minibuffer-setup-hook)
 
-(add-hook 'change-major-mode-hook 'my-leading-key-have-priority)
+(add-hook 'change-major-mode-hook 'my-hydra-have-priority t)
 
-(defun my-leading-key-have-priority ()
+(defun my-hydra-have-priority ()
   "Try to ensure that my keybindings retain priority over other minor modes."
-  (unless (eq (caar minor-mode-map-alist) 'my-leading-key-minor-mode)
-    (let ((mykeys (assq 'my-leading-key-minor-mode minor-mode-map-alist)))
-      (assq-delete-all 'my-leading-key-minor-mode minor-mode-map-alist)
+  (unless (eq (caar minor-mode-map-alist) 'my-hydra-minor-mode)
+    (let ((mykeys (assq 'my-hydra-minor-mode minor-mode-map-alist)))
+      (assq-delete-all 'my-hydra-minor-mode minor-mode-map-alist)
       (add-to-list 'minor-mode-map-alist mykeys))))
 
-(defun my-leading-key-have-priority2 ()
+(defun my-hydra-have-priority2 ()
   (unless minor-mode-overriding-map-alist
     (setq minor-mode-overriding-map-alist
-          (list (cons 'my-leading-key-minor-mode my-leading-key-minor-mode-map)))))
+          (list (cons 'my-hydra-minor-mode my-hydra-minor-mode-map)))))

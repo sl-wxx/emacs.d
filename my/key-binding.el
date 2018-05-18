@@ -23,6 +23,20 @@ _ _: insert-comma-space    _r_: find-reference       _b_: jump-backward      ^ ^
   ("<tab>" sdcv-search-pointer :color blue)
 )
 
+;; ------------------- debug key-bindings -------------------------------------------------
+(defhydra hydra-debug (global-map "<f12>")
+  "debug"
+  ("<f5>" gud-step "jump in")
+  ("<f6>" gud-next "jump next")
+  ("<f7>" gud-finish "jump return")
+  ("u" gud-until "jump until current line")
+  ("p" gud-print "print exp value" :color blue)
+  ("b" gud-tbreak "set breakpoint")
+  ("r" gud-remove "remove breakpoint")
+  ("<f9>" gud-stepi "stepi")
+  ("<f10>" gud-nexti "nexti")
+  ("q" nil "quit debug mode" :color blue)
+  )
 
 ;; --------create a minor-mode to make our key-binding take precedence --------------------
 

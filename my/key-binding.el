@@ -13,11 +13,13 @@
 ^^^^^^^^------------------------------------------------------------------------------------
 _,_: insert-comma          _d_: find-definition      _f_: jump-forward       _<tab>_: sdcv-search-pointer
 _ _: insert-comma-space    _r_: find-reference       _b_: jump-backward      ^ ^
+^ ^                        _s_: find-symbol          ^ ^                     ^ ^
 "
-  ("," insert-comma)
-  (" " insert-comma-space)
+  ("," insert-comma :color blue)
+  (" " insert-comma-space :color blue)
   ("d" counsel-gtags-find-definition :color blue)
   ("r" counsel-gtags-find-reference :color blue)
+  ("s" counsel-gtags-find-symbol :color blue)
   ("f" recent-jump-jump-forward)
   ("b" recent-jump-jump-backward)
   ("<tab>" sdcv-search-pointer :color blue)

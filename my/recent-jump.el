@@ -76,6 +76,10 @@
     imenu
     counsel-gtags-find-definition
     swiper
+    goto-line
+    counsel-gtags-find-reference
+    counsel-gtags-find-definition
+    counsel-gtags-find-symbol
     ))
     
 ;;this variable is set at pre-command-hook, and remember where are you before a

@@ -11,7 +11,6 @@
 
 (defun _set-src-buffer-read-only ()
   (let ((file-name (concat (buffer-file-name (current-buffer)))))
-    (print file-name)
     (if (or
          (string-suffix-p ".c" file-name)
          (string-suffix-p ".cpp" file-name)

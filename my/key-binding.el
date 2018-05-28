@@ -12,11 +12,11 @@
 ^Insert^                   ^Find^                    ^Jump^                  ^Dictionary
 ^^^^^^^^------------------------------------------------------------------------------------
 _,_: insert-comma          _d_: find-definition      _f_: jump-forward       _<tab>_: sdcv-search-pointer
-_ _: insert-comma-space    _r_: find-reference       _b_: jump-backward      ^ ^
+_<SPC>_: insert-comma-space    _r_: find-reference       _b_: jump-backward      ^ ^
 ^ ^                        _s_: find-symbol          ^ ^                     ^ ^
 "
   ("," insert-comma :color blue)
-  (" " insert-comma-space :color blue)
+  ("<SPC>" insert-comma-space :color blue)
   ("d" counsel-gtags-find-definition :color blue)
   ("r" counsel-gtags-find-reference :color blue)
   ("s" counsel-gtags-find-symbol :color blue)
@@ -34,7 +34,7 @@ _ _: insert-comma-space    _r_: find-reference       _b_: jump-backward      ^ ^
   ("u" gud-until "jump until current line")
   ("p" gud-print "print exp value" :color blue)
   ("b" gud-tbreak "set breakpoint")
-  ("r" gud-remove "remove breakpoint")
+  ("r" gud-refresh "gud-refresh")
   ("<f9>" gud-stepi "stepi")
   ("<f10>" gud-nexti "nexti")
   ("q" nil "quit debug mode" :color blue)

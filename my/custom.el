@@ -26,3 +26,11 @@
 (defun set-src-buffer-read-only-off ()
   (interactive)
   (remove-hook 'find-file-hook '_set-src-buffer-read-only))
+
+(defun my-gud-find-file (file)
+  ;; Don't get confused by double slashes in the name that comes from GDB.
+  (let ((minor-mode gud-minor-mode)
+        (buf (and (file-readable-p file) (find-file-noselect file 'nowarn))))
+    (when buf
+      (with-selected-window gdb-source-window (set-window-buffer gdb-source-window buf))
+      buf)))

@@ -9,19 +9,19 @@
 (defhydra my-hydra (:color pink
                              :hint nil)
   "
-^Insert^                   ^Find^                    ^Jump^                  ^Dictionary
+^Insert^                      ^Find^                    ^Jump^                  ^Dictionary
 ^^^^^^^^------------------------------------------------------------------------------------
-_,_: insert-comma          _d_: find-definition      _f_: jump-forward       _<tab>_: sdcv-search-pointer
-_<SPC>_: insert-comma-space    _r_: find-reference       _b_: jump-backward      ^ ^
-^ ^                        _s_: find-symbol          ^ ^                     ^ ^
+_,_: insert-comma             _d_: find-definition      _f_: rj-forward       _<tab>_: sdcv-search-pointer
+_<SPC>_: insert-comma-space   _r_: find-reference       _b_: rj-backward      ^ ^
+^ ^                           _s_: find-symbol          ^ ^                     ^ ^
 "
   ("," insert-comma :color blue)
   ("<SPC>" insert-comma-space :color blue)
   ("d" counsel-gtags-find-definition :color blue)
   ("r" counsel-gtags-find-reference :color blue)
   ("s" counsel-gtags-find-symbol :color blue)
-  ("f" recent-jump-jump-forward)
-  ("b" recent-jump-jump-backward)
+  ("f" rj-forward)
+  ("b" rj-backward)
   ("<tab>" sdcv-search-pointer :color blue)
 )
 

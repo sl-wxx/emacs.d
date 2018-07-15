@@ -1,59 +1,91 @@
-;;; recent-jump.el --- jump back to where you start a big jump
+;;; point-undo.el --- undo/redo position
 
-;; Copyright (C) 2005  Free Software Foundation, Inc.
+;;  Copyright (C) 2006,2008 rubikitch <rubikitch atmark ruby-lang.org>
+;;  Version: $Id: point-undo.el,v 1.6 2009/10/16 20:37:37 rubikitch Exp rubikitch $
 
-;; Author: ChunYe Wang ;;Keywords: tools
-
-;; This file is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 2, or (at your option)
-;; any later version.
-
-;; This file is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-
-;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-;; Boston, MA 02111-1307, USA.
+;;  This program is free software; you can redistribute it and/or modify
+;;  it under the terms of the GNU General Public License as published by
+;;  the Free Software Foundation; either version 2 of the License, or
+;;  (at your option) any later version.
+;;    This program is distributed in the hope that it will be useful,
+;;  but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;  GNU General Public License for more details.
+;;    You should have received a copy of the GNU General Public License
+;;  along with this program; if not, write to the Free Software
+;;  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 ;;; Commentary:
+
+;; This package allows you to undo/redo point and window-start.
+;; It is like w3m's UNDO/REDO commands.
+
+;;; Commands:
+;;
+;; Below are complete command list:
+;;
+;;  `point-undo'
+;;    Undo position.
+;;  `point-redo'
+;;    Redo position.
+;;
+;;; Customizable Options:
+;;
+;; Below are customizable option list:
+;;
+
+;;; Setup:
+
+;; (require 'point-undo)
+;; (define-key global-map [f5] 'point-undo)
+;; (define-key global-map [f6] 'point-redo)
+
+;;; Bug Report:
+;;
+;; If you have problem, send a bug report via M-x point-undo-send-bug-report.
+;; The step is:
+;;  0) Setup mail in Emacs, the easiest way is:
+;;       (setq user-mail-address "your@mail.address")
+;;       (setq user-full-name "Your Full Name")
+;;       (setq smtpmail-smtp-server "your.smtp.server.jp")
+;;       (setq mail-user-agent 'message-user-agent)
+;;       (setq message-send-mail-function 'message-smtpmail-send-it)
+;;  1) Be sure to use the LATEST version of point-undo.el.
+;;  2) Enable debugger. M-x toggle-debug-on-error or (setq debug-on-error t)
+;;  3) Use Lisp version instead of compiled one: (load "point-undo.el")
+;;  4) Do it!
+;;  5) If you got an error, please do not close *Backtrace* buffer.
+;;  6) M-x point-undo-send-bug-report and M-x insert-buffer *Backtrace*
+;;  7) Describe the bug using a precise recipe.
+;;  8) Type C-c C-c to send.
+;;  # If you are a Japanese, please write in Japanese:-)
+
+;;; History:
 ;; 
-;; sometimes, we start a big jump, e.g. go to the beginning of buffer, search,
-;; page down etc, it is handy that you can go back to where you start. For
-;; example, when we writing program source code, we ofter search for some
-;; reference and go back to where you start and continue writing. But how can we
-;; define "Big Jump". I can not find a proper hook for the big jump, so at last
-;; I choose the pre-command-hook. Now what my defination for "Big Jump" is :
-;; 
-;; 1. you issued some special command, it can be defined by
-;; recent-jump-hook-commands 
+;; $Log: point-undo.el,v $
+;; Revision 1.6  2009/10/16 20:37:37  rubikitch
+;; point-undo-list records position info only when point is moved.
 ;;
-;; 2. you jumped really much. that is you move more than `recent-jump-threshold'
-;; lines.
+;; Revision 1.5  2008/12/27 15:21:03  rubikitch
+;; *** empty log message ***
 ;;
-;; C-o is binded for open-lines, I not used to very often, and VI bind C-o for
-;; go to old point, so it is a good idea to bind "C-o" for jumping back where
-;; you start. and "M-o" is suitable for jump forward, i.e. undo the jumping back.
+;; Revision 1.4  2008/12/27 15:20:26  rubikitch
+;; *** empty log message ***
 ;;
-;; sample configuration
-;; (setq recent-jump-threshold 4)
-;; (setq recent-jump-ring-length 10)
-;; (global-set-key (kbd "C-o") 'recent-jump-jump-backward)
-;; (global-set-key (kbd "M-o") 'recent-jump-jump-forward)
-;; (require 'recent-jump)
+;; Revision 1.3  2008/12/27 15:19:38  rubikitch
+;; refactoring
+;;
+;; Revision 1.2  2008/12/27 14:53:54  rubikitch
+;; undo/redo not only point but also window-start.
+;;
+
+;; 2006/02/27: initial version
 
 ;;; Code:
+;; (eval-when-compile (require 'cl))
 
-(defvar recent-jump-threshold 5
-  "how to define a big jump.")
-(defvar recent-jump-ring-length 10)
-(defvar recent-jump-ring (make-ring recent-jump-ring-length))
-
-(defvar recent-jump-hook-commands
-  '(next-line 
+(setq recent-jump-hook-commands
+  '(next-line
     previous-line
     isearch-forward
     isearch-backward
@@ -74,87 +106,121 @@
     switch-to-buffer
     ido-switch-buffer
     imenu
-    counsel-gtags-find-definition
     swiper
     goto-line
-    counsel-gtags-find-reference
-    counsel-gtags-find-definition
-    counsel-gtags-find-symbol
+    my-hydra/counsel-gtags-find-reference-and-exit
+    my-hydra/counsel-gtags-find-definition-and-exit
+    my-hydra/counsel-gtags-find-symbol-and-exit
+    my-hydra/gud-step
+    my-hydra/gud-next
+    my-hydra/gud-finish
+    my-hydra/gud-until
+    my-hydra/gud-refresh
+    select-window
+    select-window-0
+    select-window-1
+    select-window-2
+    select-window-3
+    select-window-4
+    select-window-5
+    select-window-6
+    select-window-7
+    select-window-8
+    select-window-9
     ))
-    
-;;this variable is set at pre-command-hook, and remember where are you before a
-;;command, and after the command executed, check this variable, weather it is a
-;;big jump, if so, remember where you start the jump in the recent-jump-ring.
-(setq recent-jump-where-are-you nil)
-(defun recent-jump-pre-command()
-  (if (memq this-command recent-jump-hook-commands)
-      (progn (setq recent-jump-where-are-you (make-marker))
-             (set-marker recent-jump-where-are-you (point)))
-    (if (or (active-minibuffer-window)
-            isearch-mode)
-        nil; 
-      (setq recent-jump-where-are-you nil))))
-(defun recent-jump-insert-point()
-  (if (and (not (ring-empty-p recent-jump-ring))
-           (equal recent-jump-where-are-you (ring-ref recent-jump-ring 0)))
-      nil ; don't insert the point if it is already exists.
-    (ring-insert recent-jump-ring recent-jump-where-are-you)))
-(defun recent-jump-post-command()
-  (when recent-jump-where-are-you
-    ;; only remember jump in a the same buffer.
-    (let* ((distance (if (eq (marker-buffer recent-jump-where-are-you)
-                             (current-buffer))
-                         (count-lines (point) recent-jump-where-are-you)
-                       (1+ recent-jump-threshold))))
-      (if (> distance recent-jump-threshold) 
-          (recent-jump-insert-point)))))
 
-(add-hook 'pre-command-hook 'recent-jump-pre-command)
-(add-hook 'post-command-hook 'recent-jump-post-command)
+(setq rj-executed-commands nil)
 
-;;(remove-hook 'pre-command-hook 'recent-jump-pre-command)
-;;(remove-hook 'post-command-hook 'recent-jump-post-command)
+(defun rj-start-record()
+  (interactive)
+  (setq rj-executed-commands (cons 'start rj-executed-commands)))
 
-(defun recent-jump-jump-backward (arg)
-  (interactive "p")
-  (setq recent-jump-back-internal-counter 
-        (if (eq last-command 'recent-jump-jump-backward)
-            (+ recent-jump-back-internal-counter arg)
-           (setq recent-jump-where-are-you (make-marker))
-          (set-marker recent-jump-where-are-you (point))
-          (recent-jump-insert-point)
-          1))
-  (if (ring-empty-p recent-jump-ring)
-      (error "jump ring is empty.")
-    (let ((m (ring-ref recent-jump-ring recent-jump-back-internal-counter)))
-      (switch-to-buffer (marker-buffer m))
-      (goto-char m))))
-(defun recent-jump-jump-forward (arg)
-  (interactive "p")
-  (setq this-command 'recent-jump-jump-backward)
-  (recent-jump-jump-backward(* -1 arg)))
-(defun recent-jump--describe-key (key)
-  "Display documentation of the function invoked by KEY.  KEY is a string."
-  (interactive "kDescribe key: ")
-  (let ((modifiers (event-modifiers (aref key 0)))
-        window position)
-    ;; For a mouse button event, go to the button it applies to
-    ;; to get the right key bindings.  And go to the right place
-    ;; in case the keymap depends on where you clicked.
-    (if (or (memq 'click modifiers) (memq 'down modifiers)
-            (memq 'drag modifiers))
-        (setq window (posn-window (event-start (aref key 0)))
-              position (posn-point (event-start (aref key 0)))))
-    (if (windowp window)
-        (progn
-          (set-buffer (window-buffer window))
-          (goto-char position)))
-    (let ((defn (or (string-key-binding key) (key-binding key))))
-      (if (or (null defn) (integerp defn))
-          (message "%s is undefined" (key-description key))
-        (insert (format "%S" defn))
-        (lisp-indent-line)
-        (insert "\n")))))
+(setq rj-hook-command-executed nil)
+
+(setq point-undo-list nil)
+
+(setq point-redo-list nil)
+
+(setq recent-jump-threshold 3)
+
+;; The state of state machine.
+;; The machine will be in command/undo/redo state, each after executing normal command/undo/redo
+(setq rj-current-state 'initial)
+
+(defun rj-forward ()
+  (interactive)
+  (unless (or (eq rj-current-state 'initial)
+              (eq rj-current-state 'command))
+    (rj-do-jump point-redo-list point-undo-list)
+    (setq rj-current-state 'redo)
+    ;;(rj-debug "rj-backward")
+    ))
+
+(defmacro rj-do-jump (list1 list2)
+  `(when ,list1
+     (destructuring-bind (p . rest) ,list1
+       (setq ,list2 (cons (point-marker) ,list2))
+       (setq ,list1 rest)
+       (switch-to-buffer (marker-buffer p))
+       (goto-char p))))
+
+(defun rj-backward ()
+  (interactive)
+  (unless (eq rj-current-state 'initial)
+    (rj-do-jump point-undo-list point-redo-list)
+    (setq rj-current-state 'undo)
+    ;;(rj-debug "rj-backward")
+    ))
+
+(defun rj-pre-command-hook-helper ()
+  (setq point-undo-list (cons (point-marker) point-undo-list))
+  (setq point-redo-list nil)
+  (setq rj-current-state 'command)
+  (setq rj-hook-command-executed nil)
+  ;;(rj-debug "rj-pre-command-hook-helper")
+  )
+
+(defun system-buffer-p (buffer)
+  (let ((buffer-name (buffer-name buffer)))
+    (and (string-suffix-p "*" buffer-name)
+         (string-prefix-p "*" buffer-name))))
+
+(defun rj-pre-command-hook ()
+  (setq rj-executed-commands (cons this-command rj-executed-commands))
+  (when (memq this-command recent-jump-hook-commands)
+    (setq rj-hook-command-executed 1))
+  (unless (or (not rj-hook-command-executed)
+              (eq this-command 'my-hydra/rj-backward)
+              (eq this-command 'my-hydra/rj-forward)
+              (eq this-command 'rj-backward)
+              (eq this-command 'rj-backward)
+              (active-minibuffer-window)
+              (system-buffer-p (current-buffer))
+              isearch-mode)
+    (cond ((eq rj-current-state 'initial) (rj-pre-command-hook-helper))
+          ((and (eq rj-current-state 'undo) (rj-is-big-jump (car point-redo-list)))
+           (rj-pre-command-hook-helper))
+          ((rj-is-big-jump (car point-undo-list)) (rj-pre-command-hook-helper)))))
+
+(defun rj-is-big-jump (old-point)
+  (let ((same-buffer (eq (marker-buffer old-point) (current-buffer))))
+    (or (not same-buffer)
+        (> (count-lines (point) old-point) recent-jump-threshold))))
+
+(add-hook 'pre-command-hook 'rj-pre-command-hook)
+
+(defun rj-debug-command ()
+  (interactive)
+  (rj-debug "manal-rj-debug"))
+
+(defun rj-debug (title)
+  (print title)
+  (print point-redo-list)
+  (print point-undo-list)
+  (print rj-current-state))
 
 (provide 'recent-jump)
-;;; recent-jump.el ends here
+
+;; How to save (DO NOT REMOVE!!)
+;; (emacswiki-post "point-undo.el")
+;;; point-undo.el ends here
